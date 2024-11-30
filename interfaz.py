@@ -5,6 +5,8 @@ from tkcalendar import DateEntry
 from datos import datos_manager
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from tkinter import messagebox
+
 
 # Configuración de la ventana principal
 root = ctk.CTk()
@@ -37,7 +39,7 @@ def limpiar_frame_main():
 def mostrar_detalles_registro(registro_id):
     registro = datos_manager.df.loc[datos_manager.df["SUBJECT_ID"] == registro_id].dropna(axis=1)
     if registro.empty:
-        ctk.CTkMessageBox.show_info("Información", f"No se encontró información para ID {registro_id}")
+        messagebox.showinfo("Información", f"No se encontró información para ID {registro_id}")
         return
 
     detalles_ventana = ctk.CTkToplevel(root)
@@ -980,11 +982,55 @@ def mostrar_formulario():
     btn_guardar = ctk.CTkButton(frame_main, text="Guardar", command=guardar)
     btn_guardar.pack(pady=10)
 
-def mostrar_registros():
-    limpiar_frame_main()
-    lbl_titulo = ctk.CTkLabel(frame_main, text="Analisis", font=("Arial", 20))
+# Función para mostrar los botones
+def mostrar_datos():
+    limpiar_frame_main()  # Limpiar el frame antes de mostrar nuevos elementos
+    lbl_titulo = ctk.CTkLabel(frame_main, text="Datos", font=("Arial", 20))
     lbl_titulo.pack(pady=10)
 
+    # Crear un frame con scroll para los botones
+    frame_scroll = ctk.CTkScrollableFrame(frame_main, width=600, height=400)
+    frame_scroll.pack(pady=10, padx=10, fill="both", expand=True)
+
+    datos_manager.rename_columns()
+
+    # Botón para mostrar la información del DataFrame en un popup
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Mostrar Información", command=lambda: messagebox.showinfo(
+        "Información del DataFrame", 
+        f"Primeras filas del DataFrame:\n{str(datos_manager.df.head())}\n\n"
+        f"Información general sobre el DataFrame:\n{str(datos_manager.df.info())}\n\n"
+        f"Estadísticas descriptivas:\n{str(datos_manager.df.describe())}"
+    ))
+    btn_mostrar_info.pack(pady=10)
+
+    
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Distribucion de edad al inicio del estudio", command=datos_manager.plot_histogram_age_start)
+    btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Dianostico por tipo de alergia", command=datos_manager.plot_age_boxplot_by_allergy)
+    btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Prevalencia de alergias por genero", command=datos_manager.plot_allergy_by_gender)
+    btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Prevalencia de alergias por raza", command=datos_manager.plot_allergy_by_race)
+    btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Matriz de corelacion", command=datos_manager.plot_correlation_matrix)
+    btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Proporcion de genero por tipo de alergia", command=datos_manager.plot_gender_allergy_proportions)
+    btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Datos de alergias", command=datos_manager.plot_missing_data)
+    btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final", command=datos_manager.plot_age_patterns)
+    btn_mostrar_info.pack(pady=10)
+        
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final por raza", command=datos_manager.plot_age_patterns_by_race)
+    btn_mostrar_info.pack(pady=10)
+    
 # Función para alternar la visibilidad de la barra lateral
 def alternar_sidebar():
     if sidebar_visible.get():
@@ -1005,11 +1051,10 @@ btn_registros.pack(pady=10, padx=10, fill="x")
 btn_formulario = ctk.CTkButton(frame_sidebar, text="Formulario", command=mostrar_formulario)
 btn_formulario.pack(pady=10, padx=10, fill="x")
 
+btn_formulario = ctk.CTkButton(frame_sidebar, text="Datos", command=mostrar_datos)
+btn_formulario.pack(pady=10, padx=10, fill="x")
+
 mostrar_registros()
 
 def ejecutar_interfaz():
     root.mainloop()
-
-
-if __name__ == "__main__":
-    ejecutar_interfaz()
