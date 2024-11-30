@@ -60,14 +60,8 @@ class DatosManager:
     def edad_promedio(self):
         """Representa los patrones de edad al inicio y al final del estudio."""
 
-        # Verificar si las columnas existen en el DataFrame
-        if 'AGE_START_YEARS' not in self.df.columns or 'AGE_END_YEARS' not in self.df.columns:
-            print("Las columnas 'AGE_START_YEARS' o 'AGE_END_YEARS' no están presentes en el DataFrame.")
-            return
-
         # Eliminar filas con valores nulos en las columnas de edad
         if self.df[['AGE_START_YEARS', 'AGE_END_YEARS']].isnull().sum().any():
-            print("Hay valores nulos en las columnas de edad. Se eliminarán los valores nulos.")
             self.df.dropna(subset=['AGE_START_YEARS', 'AGE_END_YEARS'], inplace=True)
 
         # Crear una figura con subgráficos
@@ -254,7 +248,6 @@ class DatosManager:
 
         # Verificar si la columna 'GENDER_FACTOR' existe en los datos
         if 'GENDER_FACTOR' not in self.df.columns:
-            print("La columna 'GENDER_FACTOR' no está presente en el DataFrame.")
             return
 
         # Derretir el DataFrame para poner las alergias en una sola columna
@@ -286,11 +279,6 @@ class DatosManager:
             "ALMOND_ALG_START", "BRAZIL_ALG_START", "HAZELNUT_ALG_START", "CASHEW_ALG_START"
         ]
         
-        # Verificar si la columna 'GENDER_FACTOR' existe en los datos
-        if 'GENDER_FACTOR' not in self.df.columns:
-            print("La columna 'GENDER_FACTOR' no está presente en el DataFrame.")
-            return
-        
         # Derretir el DataFrame para poner las alergias en una sola columna
         df_alergias = self.df.melt(id_vars=['GENDER_FACTOR'], value_vars=alergias, var_name='Tipo_Alergia', value_name='Alergia_Inicio')
         
@@ -299,9 +287,6 @@ class DatosManager:
         
         # Crear la tabla de proporción de género por tipo de alergia
         proportion_gender_allergy = df_alergias.groupby(['GENDER_FACTOR', 'Tipo_Alergia']).size().unstack()
-
-        # Imprimir la tabla de proporciones
-        print(proportion_gender_allergy)
         
         # Graficar la proporción de género por tipo de alergia como un gráfico de barras apiladas
         proportion_gender_allergy.plot(kind='bar', stacked=True, figsize=(12, 8))
