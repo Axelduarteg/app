@@ -992,8 +992,6 @@ def mostrar_datos():
     frame_scroll = ctk.CTkScrollableFrame(frame_main, width=600, height=400)
     frame_scroll.pack(pady=10, padx=10, fill="both", expand=True)
 
-    datos_manager.rename_columns()
-
     # Botón para mostrar la información del DataFrame en un popup
     btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Mostrar Información", command=lambda: messagebox.showinfo(
         "Información del DataFrame", 
@@ -1003,40 +1001,30 @@ def mostrar_datos():
     ))
     btn_mostrar_info.pack(pady=10)
 
-    
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Distribucion de edad al inicio del estudio", command=datos_manager.plot_histogram_age_start)
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Frecuencia en generos", command=datos_manager.graficar_contingencia_genero_alergias)
     btn_mostrar_info.pack(pady=10)
 
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Dianostico por tipo de alergia", command=datos_manager.plot_age_boxplot_by_allergy)
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Proporcion en generos", command=datos_manager.plot_gender_allergy_proportions)
     btn_mostrar_info.pack(pady=10)
 
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Prevalencia de alergias por genero", command=datos_manager.plot_allergy_by_gender)
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Edad promedio", command=datos_manager.edad_promedio)
     btn_mostrar_info.pack(pady=10)
 
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Prevalencia de alergias por raza", command=datos_manager.plot_allergy_by_race)
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Alergias mas frecuentes", command=datos_manager.graficar_distribucion_alergias)
     btn_mostrar_info.pack(pady=10)
 
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Matriz de corelacion", command=datos_manager.plot_correlation_matrix)
-    btn_mostrar_info.pack(pady=10)
-
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Proporcion de genero por tipo de alergia", command=datos_manager.plot_gender_allergy_proportions)
-    btn_mostrar_info.pack(pady=10)
-
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Datos de alergias", command=datos_manager.plot_missing_data)
-    btn_mostrar_info.pack(pady=10)
-
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final", command=datos_manager.plot_age_patterns)
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="diagnostico por tipo de alergia", command=datos_manager.plot_avg_age_by_allergy)
     btn_mostrar_info.pack(pady=10)
         
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final por raza", command=datos_manager.plot_age_patterns_by_race)
-    btn_mostrar_info.pack(pady=10)
-    
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final por raza", command=datos_manager.plot_age_patterns_by_race)
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Alergias mejoran o empeoran?", command=datos_manager.graficar_mejora_empeoramiento)
     btn_mostrar_info.pack(pady=10)
 
-    #boton aqui
-    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final por raza", command=datos_manager.funcion123 )
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Frecuencia de alergias por año de nacimiento", command=datos_manager.graficar_alergias_por_año_nacimiento)
     btn_mostrar_info.pack(pady=10)
+
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Alergias sengun el payer_factor", command=datos_manager.graficar_alergias_vs_payer_factor)
+    btn_mostrar_info.pack(pady=10)
+
 # Función para alternar la visibilidad de la barra lateral
 def alternar_sidebar():
     if sidebar_visible.get():

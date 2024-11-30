@@ -56,203 +56,293 @@ class DatosManager:
 
     def total_registros(self):
         return len(self.df)
-    
-    #aqui
 
-    def rename_columns(self):
-        """Renombrar las columnas para mayor claridad."""
-        self.df.rename(columns={
-            'GENDER_FACTOR': 'FACTOR_GENERO',
-            'ETHNICITY_FACTOR': 'FACTOR_RAZA',
-            'AGE_START_YEARS': 'EDAD_INICIO_AÑOS',
-            'AGE_END_YEARS': 'EDAD_FINAL_AÑOS',
-            'SHELLFISH_ALG_START': 'SHELLFISH_alg_start',
-            'PAYER_FACTOR': 'medicacion'
-        }, inplace=True)
+    def edad_promedio(self):
+        """Representa los patrones de edad al inicio y al final del estudio."""
 
-    def display_initial_info(self):
-        """Devuelve la información inicial sobre el DataFrame."""
-        info = {
-            "head": self.df.head(),  # Primeras filas del DataFrame
-            "info": self.df.info(),  # Información sobre las columnas
-            "describe": self.df.describe()  # Estadísticas descriptivas
-        }
-        return info
+        # Verificar si las columnas existen en el DataFrame
+        if 'AGE_START_YEARS' not in self.df.columns or 'AGE_END_YEARS' not in self.df.columns:
+            print("Las columnas 'AGE_START_YEARS' o 'AGE_END_YEARS' no están presentes en el DataFrame.")
+            return
 
-    def plot_histogram_age_start(self):
-        """Muestra un histograma de la edad al inicio del estudio."""
-        plt.figure(figsize=(8, 6))
-        plt.hist(self.df['EDAD_INICIO_AÑOS'], bins=20, color='skyblue', edgecolor='black')
-        plt.xlabel('Edad al inicio (años)')
+        # Eliminar filas con valores nulos en las columnas de edad
+        if self.df[['AGE_START_YEARS', 'AGE_END_YEARS']].isnull().sum().any():
+            print("Hay valores nulos en las columnas de edad. Se eliminarán los valores nulos.")
+            self.df.dropna(subset=['AGE_START_YEARS', 'AGE_END_YEARS'], inplace=True)
+
+        # Crear una figura con subgráficos
+        plt.figure(figsize=(14, 10))
+
+        # Subgráfico 1: Histograma de las edades al inicio del estudio
+        plt.subplot(2, 2, 1)
+        plt.hist(self.df['AGE_START_YEARS'], bins=20, color='skyblue', edgecolor='black')
+        plt.title('Distribución de Edad al Inicio del Estudio')
+        plt.xlabel('Edad al Inicio (años)')
         plt.ylabel('Frecuencia')
-        plt.title('Distribución de la Edad al Inicio del Estudio')
+
+        # Subgráfico 2: Histograma de las edades al final del estudio
+        plt.subplot(2, 2, 2)
+        plt.hist(self.df['AGE_END_YEARS'], bins=20, color='lightgreen', edgecolor='black')
+        plt.title('Distribución de Edad al Final del Estudio')
+        plt.xlabel('Edad al Final (años)')
+        plt.ylabel('Frecuencia')
+
+        # Subgráfico 3: Relación entre Edad al Inicio y Edad al Final
+        plt.subplot(2, 2, 3)
+        sns.scatterplot(data=self.df, x='AGE_START_YEARS', y='AGE_END_YEARS', alpha=0.6, color='orange')
+        plt.title('Relación entre Edad al Inicio y Edad al Final del Estudio')
+        plt.xlabel('Edad al Inicio (años)')
+        plt.ylabel('Edad al Final (años)')
+
+        # Subgráfico 4: Boxplot de Edad al Inicio y Edad al Final
+        plt.subplot(2, 2, 4)
+        sns.boxplot(data=self.df[['AGE_START_YEARS', 'AGE_END_YEARS']], palette='Set2')
+        plt.title('Patrones de Edad al Inicio y al Final del Estudio')
+        plt.xlabel('Categorías de Edad')
+        plt.ylabel('Edad (años)')
+
+        # Ajustar el espacio entre los subgráficos y mostrar la figura
         plt.tight_layout()
         plt.show()
 
-    def plot_missing_data(self):
-        """Visualiza la distribución de valores faltantes."""
-        plt.figure(figsize=(10, 6))
-        sns.heatmap(self.df.isnull(), cbar=False, cmap='viridis')
-        plt.title('Mapa de Valores Faltantes')
-        plt.tight_layout()
-        plt.show()
+    def graficar_distribucion_alergias(self):
+        alergias = [
+            "SHELLFISH_alg_start", "FISH_ALG_START", "MILK_ALG_START", "SOY_ALG_START", 
+            "EGG_ALG_START", "WHEAT_ALG_START", "PEANUT_ALG_START", "SESAME_ALG_START",
+            "TREENUT_ALG_START", "WALNUT_ALG_START", "PECAN_ALG_START", "PISTACH_ALG_START", 
+            "ALMOND_ALG_START", "BRAZIL_ALG_START", "HAZELNUT_ALG_START", "CASHEW_ALG_START"
+        ]
+        alergias_counts = self.df[alergias].notna().sum()
 
-    def plot_correlation_matrix(self):
-        """Muestra un gráfico de la matriz de correlaciones."""
         plt.figure(figsize=(12, 8))
-        corr_matrix = self.df.corr(numeric_only=True)
-        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5, annot_kws={"size": 8}, cbar_kws={"shrink": 0.8})
-        plt.title('Matriz de Correlación', fontsize=16)
+        alergias_counts.sort_values().plot(kind='barh', color='purple')
+        plt.title('Distribución de Tipos de Alergias', fontsize=16)
+        plt.xlabel('Cantidad de Casos', fontsize=14)
+        plt.ylabel('Tipo de Alergia', fontsize=14)
+        plt.grid(axis='x', linestyle='--', alpha=0.7)
+        plt.show()
+
+    def graficar_mejora_empeoramiento(self):
+        columnas = [
+            "SHELLFISH_alg_start", "SHELLFISH_ALG_END", 
+            "FISH_ALG_START", "FISH_ALG_END", 
+            "MILK_ALG_START", "MILK_ALG_END", 
+            "SOY_ALG_START", "SOY_ALG_END", 
+            "EGG_ALG_START", "EGG_ALG_END", 
+            "WHEAT_ALG_START", "WHEAT_ALG_END", 
+            "PEANUT_ALG_START", "PEANUT_ALG_END", 
+            "SESAME_ALG_START", "SESAME_ALG_END", 
+            "TREENUT_ALG_START", "TREENUT_ALG_END", 
+            "WALNUT_ALG_START", "WALNUT_ALG_END", 
+            "PECAN_ALG_START", "PECAN_ALG_END", 
+            "PISTACH_ALG_START", "PISTACH_ALG_END", 
+            "ALMOND_ALG_START", "ALMOND_ALG_END", 
+            "BRAZIL_ALG_START", "BRAZIL_ALG_END", 
+            "HAZELNUT_ALG_START", "HAZELNUT_ALG_END", 
+            "CASHEW_ALG_START", "CASHEW_ALG_END"
+        ]
+        
+        mejora = 0
+        empeora = 0
+        sin_cambio = 0
+
+        # Calcular las métricas
+        for i in range(0, len(columnas), 2):
+            start_col = columnas[i]
+            end_col = columnas[i + 1]
+            
+            # Filtrar datos no nulos
+            datos = self.df[[start_col, end_col]].dropna()
+            
+            # Contar mejoras, empeoramientos y sin cambios
+            mejora += (datos[start_col] > datos[end_col]).sum()
+            empeora += (datos[start_col] < datos[end_col]).sum()
+            sin_cambio += (datos[start_col] == datos[end_col]).sum()
+
+        # Datos finales para el gráfico
+        categorias = ['Mejoró', 'Empeoró', 'Sin Cambio']
+        valores = [mejora, empeora, sin_cambio]
+
+        # Graficar
+        plt.figure(figsize=(8, 6))
+        plt.bar(categorias, valores, color=['green', 'red', 'blue'], alpha=0.7, edgecolor='black')
+        plt.title('Mejoras, Empeoramientos y Sin Cambios en las Alergias', fontsize=16)
+        plt.ylabel('Cantidad de Pacientes', fontsize=14)
+        plt.xlabel('Categorías', fontsize=14)
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.show()
+
+    def graficar_alergias_por_año_nacimiento(self):
+        """Genera un diagrama de barras del número de personas con alergias por año de nacimiento."""
+        
+        # Definir las columnas de alergias relevantes
+        alergias = [
+            "SHELLFISH_alg_start", "FISH_ALG_START", "MILK_ALG_START", "SOY_ALG_START", 
+            "EGG_ALG_START", "WHEAT_ALG_START", "PEANUT_ALG_START", "SESAME_ALG_START",
+            "TREENUT_ALG_START", "WALNUT_ALG_START", "PECAN_ALG_START", "PISTACH_ALG_START", 
+            "ALMOND_ALG_START", "BRAZIL_ALG_START", "HAZELNUT_ALG_START", "CASHEW_ALG_START"
+        ]
+        
+        # Crear una nueva columna para contar las alergias por persona
+        self.df['ALERGIAS_PRESENTES'] = self.df[alergias].notna().sum(axis=1)
+        
+        # Filtrar solo las personas que tienen alguna alergia (es decir, al menos 1 alergia)
+        df_con_alergias = self.df[self.df['ALERGIAS_PRESENTES'] > 0]
+
+        # Contar el número de personas con alergias por año de nacimiento
+        alergias_por_ano = df_con_alergias['BIRTH_YEAR'].value_counts().sort_index()
+
+        # Crear gráfico de barras
+        plt.figure(figsize=(12, 6))
+        alergias_por_ano.plot(kind='bar', color='skyblue', edgecolor='black')
+
+        # Configuración del gráfico
+        plt.title('Número de Personas con Alergias por Año de Nacimiento', fontsize=16)
+        plt.xlabel('Año de Nacimiento', fontsize=14)
+        plt.ylabel('Número de Personas con Alergias', fontsize=14)
+        plt.xticks(rotation=45)  # Rotar los años en el eje X para que se vean bien
+        plt.grid(True, linestyle='--', alpha=0.7)
+
+        # Mostrar el gráfico
         plt.tight_layout()
         plt.show()
 
-    def plot_allergy_by_gender(self):
-        """Gráfico de barras para prevalencia de alergias por género."""
-        plt.figure(figsize=(10, 6))
-        sns.countplot(data=self.df, x='SHELLFISH_alg_start', hue='FACTOR_GENERO')
-        plt.title('Prevalencia de Alergias por Género', fontsize=16)
-        plt.xlabel('Tipo de Alergia', fontsize=12)
-        plt.ylabel('Frecuencia', fontsize=12)
-        plt.legend(title='Género', title_fontsize='13', fontsize='11')
-        plt.xticks(rotation=90)
+    def graficar_alergias_vs_payer_factor(self):
+        """Compara los casos de alergias con el PAYER_FACTOR (Medicaid vs Non-Medicaid)."""
+        
+        # Definir las columnas de alergias relevantes
+        alergias = [
+            "SHELLFISH_alg_start", "FISH_ALG_START", "MILK_ALG_START", "SOY_ALG_START", 
+            "EGG_ALG_START", "WHEAT_ALG_START", "PEANUT_ALG_START", "SESAME_ALG_START",
+            "TREENUT_ALG_START", "WALNUT_ALG_START", "PECAN_ALG_START", "PISTACH_ALG_START", 
+            "ALMOND_ALG_START", "BRAZIL_ALG_START", "HAZELNUT_ALG_START", "CASHEW_ALG_START"
+        ]
+        
+        # Crear una nueva columna para contar las alergias por persona
+        self.df['ALERGIAS_PRESENTES'] = self.df[alergias].notna().sum(axis=1)
+        
+        # Filtrar las personas que tienen al menos una alergia
+        df_con_alergias = self.df[self.df['ALERGIAS_PRESENTES'] > 0]
+
+        # Contar el número de personas con alergias agrupadas por PAYER_FACTOR
+        casos_alergias = df_con_alergias.groupby('PAYER_FACTOR')['ALERGIAS_PRESENTES'].count()
+
+        # Crear gráfico de barras
+        plt.figure(figsize=(8, 6))
+        sns.barplot(x=casos_alergias.index, y=casos_alergias.values, palette='viridis')
+        
+        # Configuración del gráfico
+        plt.title('Casos de Personas con Alergias por PAYER_FACTOR (Medicaid vs Non-Medicaid)', fontsize=16)
+        plt.xlabel('PAYER_FACTOR (Medicaid vs Non-Medicaid)', fontsize=14)
+        plt.ylabel('Número de Personas con Alergias', fontsize=14)
+        plt.xticks(rotation=0, fontsize=12)
         plt.tight_layout()
         plt.show()
 
-    def plot_allergy_by_race(self):
-        """Gráfico de barras para prevalencia de alergias por raza."""
-        plt.figure(figsize=(10, 6))
-        sns.countplot(data=self.df, x='SHELLFISH_alg_start', hue='FACTOR_RAZA')
-        plt.title('Prevalencia de Alergias por Raza', fontsize=16)
-        plt.xlabel('Tipo de Alergia', fontsize=12)
-        plt.ylabel('Frecuencia', fontsize=12)
-        plt.legend(title='Raza', title_fontsize='13', fontsize='11')
-        plt.xticks(rotation=90)
-        plt.tight_layout()
-        plt.show()
+    def graficar_contingencia_genero_alergias(self):
+        """Genera una tabla de contingencia y un gráfico para comparar el género con los tipos de alergias."""
 
-    def plot_age_boxplot_by_allergy(self):
-        """Gráfico de caja para la edad al inicio del diagnóstico por tipo de alergia."""
-        plt.figure(figsize=(10, 6))
-        sns.boxplot(data=self.df, x='SHELLFISH_alg_start', y='EDAD_INICIO_AÑOS')
-        plt.title('Edad al Inicio del Diagnóstico por Tipo de Alergia')
-        plt.xlabel('Tipo de Alergia')
-        plt.ylabel('Edad al Inicio (años)')
-        plt.xticks(rotation=45)
+        # Definir las columnas de alergias (modificar si es necesario para que coincidan con tu CSV)
+        alergias = [
+            "SHELLFISH_alg_start", "FISH_ALG_START", "MILK_ALG_START", "SOY_ALG_START", 
+            "EGG_ALG_START", "WHEAT_ALG_START", "PEANUT_ALG_START", "SESAME_ALG_START",
+            "TREENUT_ALG_START", "WALNUT_ALG_START", "PECAN_ALG_START", "PISTACH_ALG_START", 
+            "ALMOND_ALG_START", "BRAZIL_ALG_START", "HAZELNUT_ALG_START", "CASHEW_ALG_START"
+        ]
+
+        # Verificar si la columna 'GENDER_FACTOR' existe en los datos
+        if 'GENDER_FACTOR' not in self.df.columns:
+            print("La columna 'GENDER_FACTOR' no está presente en el DataFrame.")
+            return
+
+        # Derretir el DataFrame para poner las alergias en una sola columna
+        df_alergias = self.df.melt(id_vars=['GENDER_FACTOR'], value_vars=alergias, var_name='Tipo_Alergia', value_name='Alergia_Inicio')
+
+        # Eliminar filas con valores nulos (si no se reporta alergia)
+        df_alergias = df_alergias.dropna(subset=['Alergia_Inicio'])
+
+        # Crear la tabla de contingencia
+        tabla_contingencia = pd.crosstab(df_alergias['GENDER_FACTOR'], df_alergias['Tipo_Alergia'])
+
+        # Graficar la tabla de contingencia como un mapa de calor
+        plt.figure(figsize=(12, 8))
+        sns.heatmap(tabla_contingencia, annot=True, fmt="d", cmap="Blues", cbar=False)
+        plt.title("Tabla de Contingencia: Género vs Tipos de Alergia")
+        plt.ylabel("Género", fontsize=12)
+        plt.xlabel("Tipo de Alergia", fontsize=12)
         plt.tight_layout()
         plt.show()
 
     def plot_gender_allergy_proportions(self):
-        """Proporción de hombres y mujeres con cada tipo de alergia."""
-        proportion_gender_allergy = self.df.groupby(['FACTOR_GENERO', 'SHELLFISH_alg_start']).size().unstack()
-        proportion_gender_allergy.plot(kind='bar', stacked=True, figsize=(10, 6))
-        plt.title('Proporción de Género por Tipo de Alergia')
+        """Genera un gráfico de barras apiladas para ver la proporción de alergias según género."""
+        
+        # Definir las columnas de alergias (modificar según las columnas de alergias en tu DataFrame)
+        alergias = [
+            "SHELLFISH_alg_start", "FISH_ALG_START", "MILK_ALG_START", "SOY_ALG_START", 
+            "EGG_ALG_START", "WHEAT_ALG_START", "PEANUT_ALG_START", "SESAME_ALG_START",
+            "TREENUT_ALG_START", "WALNUT_ALG_START", "PECAN_ALG_START", "PISTACH_ALG_START", 
+            "ALMOND_ALG_START", "BRAZIL_ALG_START", "HAZELNUT_ALG_START", "CASHEW_ALG_START"
+        ]
+        
+        # Verificar si la columna 'GENDER_FACTOR' existe en los datos
+        if 'GENDER_FACTOR' not in self.df.columns:
+            print("La columna 'GENDER_FACTOR' no está presente en el DataFrame.")
+            return
+        
+        # Derretir el DataFrame para poner las alergias en una sola columna
+        df_alergias = self.df.melt(id_vars=['GENDER_FACTOR'], value_vars=alergias, var_name='Tipo_Alergia', value_name='Alergia_Inicio')
+        
+        # Eliminar filas con valores nulos (si no se reporta alergia)
+        df_alergias = df_alergias.dropna(subset=['Alergia_Inicio'])
+        
+        # Crear la tabla de proporción de género por tipo de alergia
+        proportion_gender_allergy = df_alergias.groupby(['GENDER_FACTOR', 'Tipo_Alergia']).size().unstack()
+
+        # Imprimir la tabla de proporciones
+        print(proportion_gender_allergy)
+        
+        # Graficar la proporción de género por tipo de alergia como un gráfico de barras apiladas
+        proportion_gender_allergy.plot(kind='bar', stacked=True, figsize=(12, 8))
+        
+        # Personalización del gráfico
+        plt.title('Proporción de Género por Tipo de Alergia', fontsize=16)
+        plt.xlabel('Tipo de Alergia', fontsize=14)
+        plt.ylabel('Número de Casos', fontsize=14)
+        plt.legend(title='Género', title_fontsize='13', fontsize='11')
+        plt.tight_layout()
+        plt.show()
+
+    def plot_avg_age_by_allergy(self):
+        """Representa la edad promedio al inicio del diagnóstico por tipo de alergia."""
+
+        # Definir las columnas relacionadas con las alergias
+        allergy_columns = [
+            "SHELLFISH_alg_start", "FISH_ALG_START", "MILK_ALG_START", "SOY_ALG_START", 
+            "EGG_ALG_START", "WHEAT_ALG_START", "PEANUT_ALG_START", "SESAME_ALG_START",
+            "TREENUT_ALG_START", "WALNUT_ALG_START", "PECAN_ALG_START", "PISTACH_ALG_START", 
+            "ALMOND_ALG_START", "BRAZIL_ALG_START", "HAZELNUT_ALG_START", "CASHEW_ALG_START",
+            "ATOPIC_DERM_START", "ALLERGIC_RHINITIS_START", "ASTHMA_START"
+        ]
+        
+        # Seleccionar las columnas relevantes para alergias
+        allergies = self.df.melt(id_vars=['AGE_START_YEARS'], value_vars=allergy_columns, 
+                                var_name='Allergy_Type', value_name='Allergy_Start')
+        
+        # Filtrar las filas donde Allergy_Start no es nulo
+        allergies = allergies.dropna(subset=['Allergy_Start'])
+        
+        # Calcular la edad promedio por tipo de alergia
+        average_age_by_allergy = allergies.groupby('Allergy_Type')['AGE_START_YEARS'].mean()
+
+        # Crear el gráfico de barras
+        plt.figure(figsize=(12, 6))
+        average_age_by_allergy.plot(kind='bar', color='skyblue')
+        plt.title('Edad Promedio al Inicio del Diagnóstico por Tipo de Alergia')
         plt.xlabel('Tipo de Alergia')
-        plt.ylabel('Número de Casos')
-        plt.legend(title='Género')
-        plt.tight_layout()
-        plt.show()
-
-    def plot_age_patterns(self):
-        """Representa los patrones de edad al inicio y al final del diagnóstico."""
-        
-        # Verificar si las columnas existen
-        if 'EDAD_INICIO_AÑOS' not in self.df.columns or 'EDAD_FINAL_AÑOS' not in self.df.columns:
-            print("Las columnas necesarias no están presentes en el DataFrame.")
-            return
-        
-        # Verificar si hay valores nulos en las columnas
-        if self.df[['EDAD_INICIO_AÑOS', 'EDAD_FINAL_AÑOS']].isnull().sum().any():
-            print("Hay valores nulos en las columnas de edad. Se eliminarán los valores nulos.")
-            self.df.dropna(subset=['EDAD_INICIO_AÑOS', 'EDAD_FINAL_AÑOS'], inplace=True)
-
-        # Crear una figura con subgráficos
-        plt.figure(figsize=(14, 10))
-        
-        # Subgráfico 1: Histograma de las edades al inicio
-        plt.subplot(2, 2, 1)
-        plt.hist(self.df['EDAD_INICIO_AÑOS'], bins=20, color='skyblue', edgecolor='black')
-        plt.title('Distribución de Edad al Inicio del Diagnóstico')
-        plt.xlabel('Edad al Inicio (años)')
-        plt.ylabel('Frecuencia')
-        
-        # Subgráfico 2: Histograma de las edades al final
-        plt.subplot(2, 2, 2)
-        plt.hist(self.df['EDAD_FINAL_AÑOS'], bins=20, color='lightgreen', edgecolor='black')
-        plt.title('Distribución de Edad al Final del Diagnóstico')
-        plt.xlabel('Edad al Final (años)')
-        plt.ylabel('Frecuencia')
-        
-        # Subgráfico 3: Relación entre Edad al Inicio y Edad al Final
-        plt.subplot(2, 2, 3)
-        sns.scatterplot(data=self.df, x='EDAD_INICIO_AÑOS', y='EDAD_FINAL_AÑOS', alpha=0.6, color='orange')
-        plt.title('Relación entre Edad al Inicio y Edad al Final')
-        plt.xlabel('Edad al Inicio (años)')
-        plt.ylabel('Edad al Final (años)')
-        
-        # Subgráfico 4: Boxplot de Edad al Inicio y Edad al Final
-        plt.subplot(2, 2, 4)
-        sns.boxplot(data=self.df[['EDAD_INICIO_AÑOS', 'EDAD_FINAL_AÑOS']], palette='Set2')
-        plt.title('Patrones de Edad al Inicio y al Final')
-        plt.xlabel('Categorías de Edad')
-        plt.ylabel('Edad (años)')
-        
-        # Ajustar el espacio entre los subgráficos y mostrar la figura
-        plt.tight_layout()
-        plt.show()
-    
-    def funcion123():
-        pass 
-    
-    #aqui
-
-    def plot_age_patterns_by_race(self):
-        """Representa los patrones de edad al inicio y al final del diagnóstico por factor de raza."""
-        
-        # Verificar si las columnas existen
-        if 'FACTOR_RAZA' not in self.df.columns or 'EDAD_INICIO_AÑOS' not in self.df.columns or 'EDAD_FINAL_AÑOS' not in self.df.columns:
-            print("Las columnas necesarias no están presentes en el DataFrame.")
-            return
-        
-        # Verificar si hay valores nulos en las columnas
-        if self.df[['FACTOR_RAZA', 'EDAD_INICIO_AÑOS', 'EDAD_FINAL_AÑOS']].isnull().sum().any():
-            print("Hay valores nulos en las columnas. Se eliminarán los valores nulos.")
-            self.df.dropna(subset=['FACTOR_RAZA', 'EDAD_INICIO_AÑOS', 'EDAD_FINAL_AÑOS'], inplace=True)
-
-        # Crear una figura con subgráficos
-        plt.figure(figsize=(14, 12))
-        
-        # Subgráfico 1: Histograma de las edades al inicio, por FACTOR_RAZA
-        plt.subplot(2, 2, 1)
-        sns.boxplot(data=self.df, x='FACTOR_RAZA', y='EDAD_INICIO_AÑOS', palette='Set3')
-        plt.title('Distribución de Edad al Inicio del Diagnóstico por Raza')
-        plt.xlabel('Factor de Raza')
-        plt.ylabel('Edad al Inicio (años)')
-        plt.xticks(rotation=45)
-        
-        # Subgráfico 2: Histograma de las edades al final, por FACTOR_RAZA
-        plt.subplot(2, 2, 2)
-        sns.boxplot(data=self.df, x='FACTOR_RAZA', y='EDAD_FINAL_AÑOS', palette='Set3')
-        plt.title('Distribución de Edad al Final del Diagnóstico por Raza')
-        plt.xlabel('Factor de Raza')
-        plt.ylabel('Edad al Final (años)')
-        plt.xticks(rotation=45)
-        
-        # Subgráfico 3: Relación entre Edad al Inicio y Edad al Final, por FACTOR_RAZA
-        plt.subplot(2, 2, 3)
-        sns.scatterplot(data=self.df, x='EDAD_INICIO_AÑOS', y='EDAD_FINAL_AÑOS', hue='FACTOR_RAZA', alpha=0.6, palette='Set1')
-        plt.title('Relación entre Edad al Inicio y Edad al Final por Raza')
-        plt.xlabel('Edad al Inicio (años)')
-        plt.ylabel('Edad al Final (años)')
-        
-        # Subgráfico 4: Boxplot comparando Edad al Inicio y Edad al Final por FACTOR_RAZA
-        plt.subplot(2, 2, 4)
-        sns.boxplot(data=self.df[['EDAD_INICIO_AÑOS', 'EDAD_FINAL_AÑOS', 'FACTOR_RAZA']], x='FACTOR_RAZA', y='EDAD_INICIO_AÑOS', hue='FACTOR_RAZA', palette='Set2')
-        plt.title('Comparación de Edad al Inicio y al Final por Raza')
-        plt.xlabel('Factor de Raza')
-        plt.ylabel('Edad (años)')
-        plt.xticks(rotation=45)
-        
-        # Ajustar el espacio entre los subgráficos y mostrar la figura
+        plt.ylabel('Edad Promedio al Inicio (años)')
+        plt.xticks(rotation=90, ha='right')  # Rotar etiquetas en el eje X para mejorar la legibilidad
         plt.tight_layout()
         plt.show()
 
