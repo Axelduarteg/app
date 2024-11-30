@@ -1031,6 +1031,12 @@ def mostrar_datos():
     btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final por raza", command=datos_manager.plot_age_patterns_by_race)
     btn_mostrar_info.pack(pady=10)
     
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final por raza", command=datos_manager.plot_age_patterns_by_race)
+    btn_mostrar_info.pack(pady=10)
+
+    #boton aqui
+    btn_mostrar_info = ctk.CTkButton(frame_scroll, text="Patrones de edad al inicio y al final por raza", command=datos_manager.funcion123 )
+    btn_mostrar_info.pack(pady=10)
 # Función para alternar la visibilidad de la barra lateral
 def alternar_sidebar():
     if sidebar_visible.get():

@@ -57,6 +57,8 @@ class DatosManager:
     def total_registros(self):
         return len(self.df)
     
+    #aqui
+
     def rename_columns(self):
         """Renombrar las columnas para mayor claridad."""
         self.df.rename(columns={
@@ -197,6 +199,11 @@ class DatosManager:
         # Ajustar el espacio entre los subgráficos y mostrar la figura
         plt.tight_layout()
         plt.show()
+    
+    def funcion123():
+        pass 
+    
+    #aqui
 
     def plot_age_patterns_by_race(self):
         """Representa los patrones de edad al inicio y al final del diagnóstico por factor de raza."""
