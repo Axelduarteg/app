@@ -109,16 +109,19 @@ def parsear_polinomio(expr: str) -> Dict[int, float]:
             coeficientes[0] += signo * coef
             continue
 
-        partes = cuerpo.split("x")
-        parte_coef = partes[0]
-        coef = 1.0 if parte_coef == "" else parsear_numero(parte_coef)
+        match = re.fullmatch(r"(?P<coef>[^x]*)x(?:\^(?P<grado>\d+))?(?P<div>/[^/]+)?", cuerpo)
+        if not match:
+            raise ValueError(f"Término inválido: {termino}")
 
-        if len(partes) > 1 and partes[1]:
-            if not partes[1].startswith("^"):
-                raise ValueError(f"Término inválido: {termino}")
-            grado = int(partes[1][1:])
-        else:
-            grado = 1
+        parte_coef = match.group("coef")
+        parte_grado = match.group("grado")
+        parte_div = match.group("div")
+
+        coef = 1.0 if parte_coef == "" else parsear_numero(parte_coef)
+        if parte_div:
+            coef /= parsear_numero(parte_div[1:])
+
+        grado = int(parte_grado) if parte_grado else 1
 
         if grado not in (1, 2):
             raise ValueError(
