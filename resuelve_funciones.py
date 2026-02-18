@@ -35,6 +35,7 @@ import argparse
 import json
 import math
 import re
+from fractions import Fraction
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -70,6 +71,18 @@ def extraer_expresion(valor: object) -> str:
     return txt
 
 
+
+
+def parsear_numero(token: str) -> float:
+    """Convierte texto numérico a float, admitiendo fracciones (ej. 1/2)."""
+    t = token.strip()
+    if not t:
+        raise ValueError("Número vacío")
+    try:
+        return float(Fraction(t))
+    except Exception as exc:
+        raise ValueError(f"Número inválido: {token!r}") from exc
+
 def normalizar_expresion(expresion: str) -> str:
     expr = expresion.replace(" ", "").replace("**", "^")
     expr = expr.replace("−", "-")
@@ -92,13 +105,13 @@ def parsear_polinomio(expr: str) -> Dict[int, float]:
         cuerpo = termino[1:]
 
         if "x" not in cuerpo:
-            coef = float(cuerpo)
+            coef = parsear_numero(cuerpo)
             coeficientes[0] += signo * coef
             continue
 
         partes = cuerpo.split("x")
         parte_coef = partes[0]
-        coef = 1.0 if parte_coef == "" else float(parte_coef)
+        coef = 1.0 if parte_coef == "" else parsear_numero(parte_coef)
 
         if len(partes) > 1 and partes[1]:
             if not partes[1].startswith("^"):
