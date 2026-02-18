@@ -290,6 +290,30 @@ def cargar_operaciones(ruta: Path) -> List[Tuple[str, List[Operacion]]]:
     return resultado
 
 
+
+def descubrir_json_en_carpeta_programa() -> Path:
+    """Busca un archivo JSON en la misma carpeta donde vive este script."""
+    carpeta = Path(__file__).resolve().parent
+    preferido = carpeta / "archivo.json"
+    if preferido.exists():
+        return preferido
+
+    candidatos = sorted(carpeta.glob("*.json"))
+    if len(candidatos) == 1:
+        return candidatos[0]
+
+    if not candidatos:
+        raise FileNotFoundError(
+            f"No se encontró ningún .json en la carpeta del programa: {carpeta}"
+        )
+
+    nombres = ", ".join(c.name for c in candidatos)
+    raise FileExistsError(
+        "Hay múltiples JSON en la carpeta del programa. "
+        "Indica uno explícitamente con el argumento 'json'. "
+        f"Detectados: {nombres}"
+    )
+
 def resolver_archivo(ruta_json: Path, salida: Path) -> Path:
     salida.mkdir(parents=True, exist_ok=True)
     bloques = cargar_operaciones(ruta_json)
@@ -315,7 +339,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Resuelve funciones lineales (primer bloque) y cuadráticas (bloques siguientes) desde JSON."
     )
-    parser.add_argument("json", type=Path, help="Ruta del archivo JSON con las operaciones")
+    parser.add_argument("json", nargs="?", type=Path, help="Ruta del archivo JSON con las operaciones (opcional). Si se omite, se busca en la carpeta del programa.")
     parser.add_argument(
         "--salida",
         type=Path,
@@ -324,7 +348,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    reporte = resolver_archivo(args.json, args.salida)
+    ruta_json = args.json if args.json is not None else descubrir_json_en_carpeta_programa()
+    reporte = resolver_archivo(ruta_json, args.salida)
     print(f"Resolución completada. Reporte: {reporte}")
 
 
